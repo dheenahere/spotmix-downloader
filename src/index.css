@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: spotify;
+    src: url('./assets/fonts/GothamBold.ttf');
+}
+@tailwind utilities;
+
+@font-face {
+    font-family: spotifyMed;
+    src: url('./assets/fonts/GothamBook.ttf');
+}
+
+body::-webkit-scrollbar{
+    display: none;
+}
