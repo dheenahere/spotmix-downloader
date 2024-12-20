@@ -87,11 +87,11 @@ const App = () => {
 
 		// Check token on app load
 		const token = localStorage.getItem("authToken");
-		// console.log(token);  // Log the JWT token before sending it back in the response
+		console.log(token);  // Log the JWT token before sending it back in the response
 
 		if (token) {
 			const decoded = jwtDecode (token);
-			console.log(decoded);
+			// console.log(decoded);
 			setCurrentUser(decoded);
 		}
 	}, []);
