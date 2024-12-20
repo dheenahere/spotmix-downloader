@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
-import './index.css';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { jwtDecode  } from 'jwt-decode'; 
 
+import UserProfile from './components/UserProfile';
+import './index.css';
+ 
 const App = () => {
   const [songId, setSongId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,6 +70,32 @@ const App = () => {
     }
   };
 
+  const [users, setUsers] = useState([]);
+	const [currentUser, setCurrentUser] = useState(null);
+
+    const fetchUsers = async () => {
+		try {
+			const response = await axios.get('https://authback-jxx5.onrender.com/api/users');
+			setUsers(response.data);
+		} catch (error) {
+			console.error("Error fetching users:", error);
+		}
+	};
+
+    useEffect(() => {
+		fetchUsers();
+
+		// Check token on app load
+		const token = localStorage.getItem("authToken");
+		// console.log(token);  // Log the JWT token before sending it back in the response
+
+		if (token) {
+			const decoded = jwtDecode (token);
+			// console.log(decoded);
+			setCurrentUser(decoded);
+		}
+	}, []);
+
   return (
     <div className="min-h-screen flex pt-20 justify-center bg-[#121212] p-4">
       <div className="max-w-md  rounded-lg shadow-md p-6">
@@ -105,6 +135,7 @@ const App = () => {
           </div>
         )}
       </div>
+      <UserProfile currentUser={currentUser} />
     </div>
   );
 };
