@@ -6,4 +6,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   base: "/spotmix-downloader/",
+  build: {
+    outDir: 'dist', // Ensure correct output folder
+  },
 });
