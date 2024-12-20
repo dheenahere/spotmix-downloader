@@ -74,14 +74,13 @@ const App = () => {
 	const [currentUser, setCurrentUser] = useState(null);
 
     const fetchUsers = async () => {
-        try {
-          const response = await axios.get(process.env.REACT_APP_API_URL);
-          setUsers(response.data);
-        } catch (error) {
-          console.error("Error fetching users:", error);
-        }
-      };
-      
+		try {
+			const response = await axios.get('https://authback-jxx5.onrender.com/api/users');
+			setUsers(response.data);
+		} catch (error) {
+			console.error("Error fetching users:", error);
+		}
+	};
 
     useEffect(() => {
 		fetchUsers();
@@ -92,7 +91,7 @@ const App = () => {
 
 		if (token) {
 			const decoded = jwtDecode (token);
-			// console.log(decoded);
+			console.log(decoded);
 			setCurrentUser(decoded);
 		}
 	}, []);
