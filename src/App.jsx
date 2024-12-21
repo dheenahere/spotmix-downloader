@@ -82,19 +82,26 @@ const App = () => {
 		}
 	};
 
-    useEffect(() => {
-		fetchUsers();
+  useEffect(() => {
+    fetchUsers();
 
-		// Check token on app load
-		const token = localStorage.getItem("authToken");
-		console.log(token);  // Log the JWT token before sending it back in the response
+    // Check token on app load
+    const token = localStorage.getItem("authToken");
 
-		if (token) {
-			const decoded = jwtDecode (token);
-			// console.log(decoded);
-			setCurrentUser(decoded);
-		}
-	}, []);
+    if (token) {
+        const decoded = jwtDecode(token);
+        const currentTime = Date.now() / 1000; // Get current time in seconds
+
+        // Check if the token has expired
+        if (decoded.exp < currentTime) {
+            localStorage.removeItem("authToken"); // Remove expired token
+            alert("Session expired. Please log in again.");
+        } else {
+            setCurrentUser(decoded); // Set user info from the decoded token
+        }
+    }
+}, []);
+
 
   return (
     <div className="min-h-screen flex pt-20 justify-center bg-[#121212] p-4">
