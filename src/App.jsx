@@ -1,112 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 import { LampContainer } from "./components/ui/lamp";
 import { motion } from "motion/react";
-import UserProfile from './components/UserProfile';
 import { SparklesCore } from "./components/ui/sparkles";
 import './index.css';
-import { GlowingEffect } from "./components/ui/glowing-effect";
-import images from './assets'
-import { Box, Lock, Search, Settings, Sparkles } from "lucide-react";
 import GridCard from './components/GridCard';
+import { getAccessToken } from "./utils/spotifyApi";
 
 const App = () => {
-    const [songId, setSongId] = useState('');
+
+    const [url, setUrl] = useState('');
+    const [trackInfo, setTrackInfo] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [songData, setSongData] = useState({});
-
-    const fetchSong = async (id) => {
-        setLoading(true);
-        setError(null);
-        setSongData({});
-
-        const apiUrl = `https://spotify-downloader9.p.rapidapi.com/downloadSong?songId=${id}`;
-        const options = {
-            method: 'GET',
-            headers: {
-                'x-rapidapi-key': 'b956d6a526msh7b1a2a3662d09cdp11fa3djsn5b6cad23f10f',
-                'x-rapidapi-host': 'spotify-downloader9.p.rapidapi.com',
-            },
-        };
-
-        try {
-            const response = await fetch(apiUrl, options);
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log(result);
-
-            if (result.success && result.data) {
-                setSongData(result.data);
-            } else {
-                console.error('Download URL not found in the response.');
-                setError('Failed to download the song');
-            }
-        } catch (error) {
-            console.error('Fetch error:', error);
-            setError('Failed to fetch the song data');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleInputChange = (e) => {
-        const value = e.target.value;
-        setSongId(value);
-
-        // Extract the song ID from the Spotify URL
-        const id = value.split('/track/')[1]?.split('?')[0];
-        if (id) {
-            fetchSong(id); // Fetch the song title whenever the input changes
-        }
-    };
-
-    const handleDownload = () => {
-        if (songData.downloadLink) {
-            const link = document.createElement('a');
-            link.href = songData.downloadLink;
-            link.setAttribute('download', 'song.mp3');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    };
-
-    const [users, setUsers] = useState([]);
-    const [currentUser, setCurrentUser] = useState(null);
-
-    const fetchUsers = async () => {
-        try {
-            const response = await axios.get('https://authback-jxx5.onrender.com/api/users');
-            setUsers(response.data);
-        } catch (error) {
-            console.error("Error fetching users:", error);
-        }
-    };
 
     useEffect(() => {
-        fetchUsers();
+        const fetchTrackInfo = async () => {
+            const trackId = extractTrackId(url);
+            if (!trackId) return;
 
-        // Check token on app load
-        const token = localStorage.getItem("authToken");
+            setLoading(true);
+            setError(null);
 
-        if (token) {
-            const decoded = jwtDecode(token);
-            const currentTime = Date.now() / 1000; // Get current time in seconds
+            try {
+                const accessToken = await getAccessToken();
+                const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
 
-            // Check if the token has expired
-            if (decoded.exp < currentTime) {
-                localStorage.removeItem("authToken"); // Remove expired token
-                alert("Session expired. Please log in again.");
-            } else {
-                setCurrentUser(decoded); // Set user info from the decoded token
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || 'Failed to fetch track details');
+                }
+
+                const data = await response.json();
+                setTrackInfo(data);
+            } catch (err) {
+                console.error('Fetch error:', err);
+                setError(err.message || 'Failed to get track information');
+                setTrackInfo(null);
+            } finally {
+                setLoading(false);
             }
-        }
-    }, []);
+        };
+
+        const debounceTimer = setTimeout(() => {
+            if (url) {
+                fetchTrackInfo();
+            }
+        }, 800);
+
+        return () => clearTimeout(debounceTimer);
+    }, [url]);
+
+    // Function to extract track ID from Spotify URL
+    const extractTrackId = (url) => {
+        if (!url) return null;
+
+        // Handle different Spotify URL formats
+        const regex = /spotify:track:([a-zA-Z0-9]+)|https:\/\/open\.spotify\.com\/track\/([a-zA-Z0-9]+)/;
+        const match = url.match(regex);
+
+        return match ? (match[1] || match[2]) : null;
+    };
 
     return (
         <div className="relative flex flex-col justify-center items-center">
@@ -203,11 +161,60 @@ const App = () => {
                             duration: 0.8,
                             ease: "easeInOut",
                         }} className='flex flex-col items-center'>
-                        <input type="text" className=' bg-transparent border h-16 w-1/3 px-6 focus:outline-none focus:border-[#1db954] focus:w-2/5 transition-all duration-500 font-para text-white text-xl tracking-wider ' placeholder='Enter the URL' />
+                        <input type="text" className=' bg-transparent border h-16 w-1/3 px-6 focus:outline-none focus:border-[#1db954] focus:w-2/5 transition-all duration-500 font-para text-white text-xl tracking-wider ' onChange={(e) => setUrl(e.target.value)} placeholder='Enter the URL' value={url} />
                         <button className='bg-[#1db954] py-4 px-32 mt-10 hover:scale-110 transition-all duration-500 active:scale-95 font-bigfont rounded-full text-dark text-xl'>
                             Download
                         </button>
                     </motion.div>
+                    {loading && <p className="mt-4 text-[#1db954]">Loading...</p>}
+                    {error && <p className="mt-4 text-red-500">{error}</p>}
+
+                    {trackInfo && (
+                        <div className="mt-8 w-full max-w-2xl bg-gray-900 p-6 rounded-lg">
+                            <div className="flex items-start">
+                                {trackInfo.album.images[0] && (
+                                    <img
+                                        src={trackInfo.album.images[0].url}
+                                        alt={trackInfo.name}
+                                        className="w-48 h-48 object-cover mr-6"
+                                    />
+                                )}
+
+                                <div>
+                                    <h2 className="text-2xl font-bold mb-2">{trackInfo.name}</h2>
+                                    <p className="text-lg text-gray-300 mb-4">
+                                        {trackInfo.artists.map(artist => artist.name).join(', ')}
+                                    </p>
+
+                                    <div className="grid grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <p className="text-gray-400">Album</p>
+                                            <p>{trackInfo.album.name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-400">Release Date</p>
+                                            <p>{trackInfo.album.release_date}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-400">Duration</p>
+                                            <p>{Math.floor(trackInfo.duration_ms / 60000)}:{((trackInfo.duration_ms % 60000) / 1000).toFixed(0).padStart(2, '0')}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-400">Popularity</p>
+                                            <p>{trackInfo.popularity}/100</p>
+                                        </div>
+                                    </div>
+
+                                    {trackInfo.preview_url && (
+                                        <audio controls className="mt-6 w-full">
+                                            <source src={trackInfo.preview_url} type="audio/mpeg" />
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
