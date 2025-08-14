@@ -1,10 +1,11 @@
 // vite.config.ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { webcrypto } from "node:crypto"; // ✅ ESM import
 
 // Polyfill for Node build environment
 if (!globalThis.crypto) {
-  globalThis.crypto = require('node:crypto').webcrypto;
+  globalThis.crypto = webcrypto;
 }
 
 // https://vitejs.dev/config/
