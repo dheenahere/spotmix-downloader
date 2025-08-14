@@ -202,7 +202,7 @@ const App = () => {
                                 <div className="flex-col flex items-center gap-4">
                                     <img
                                         src={downloadDetails.cover}
-                                        alt={downloadDetails.title}
+                                        alt={`Download ${downloadDetails.title} by ${downloadDetails.artist} as MP3`}
                                         className="w-full h-full "
                                     />
                                     <div>
@@ -230,6 +230,9 @@ const App = () => {
                     <li>Preserve all metadata including artist, album and cover art</li>
                     <li>Works without Spotify Premium subscription</li>
                     <li>Fast downloads with no speed limits</li>
+                    <li>How to save Spotify songs offline free</li>
+                    <li>Download Spotify music to phone</li>
+                    <li>Best Spotify to MP3 converter online</li>
                     <li>No software installation - works directly in your browser</li>
                 </ul>
 
