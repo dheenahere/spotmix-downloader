@@ -123,7 +123,7 @@ const App = () => {
             />
 
             {/* Foreground */}
-            <div className="relative z-10 flex flex-col items-center">
+            <div className="relative z-10 flex flex-col items-center ">
                 <LampContainer>
                     <motion.h1
                         initial={{ opacity: 0.5, y: 100 }}
@@ -141,7 +141,7 @@ const App = () => {
                         initial={{ opacity: 0.5, y: 100 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.8, ease: "easeInOut" }}
-                        className="bg-[#1db954] py-6 px-20 font-bigfont rounded-full text-dark md:text-2xl mt-20" onClick={scrollToInputSection}
+                        className="bg-[#1db954] py-6 px-20 font-bigfont rounded-full text-dark md:text-2xl mt-20 hover:scale-110 active:scale-95 transition-all duration-300 " onClick={scrollToInputSection}
                     >
                         Explore now
                     </motion.button>
@@ -184,7 +184,7 @@ const App = () => {
 
                         <button
                             onClick={isVerified ? handleDownload : verifySongData}
-                            className={`p-3 px-8 md:py-4 md:px-32 mt-10 font-bigfont rounded-full bg-[#1db954] text-dark text-xl transition-all duration-500 active:scale-95 ${isVerified ? ' hover:scale-110' : ' hover:scale-110'
+                            className={`p-3 px-8 md:py-6 md:px-32 mt-10 font-bigfont rounded-full bg-[#1db954] text-dark text-xl transition-all duration-500 active:scale-95 ${isVerified ? ' hover:scale-110' : ' hover:scale-110'
                                 }`}
                         >
                             {isLoading ? 'Verifying...' : isVerified ? (isDownloading ? "Downloading..." : 'Download') : 'Verify'}
