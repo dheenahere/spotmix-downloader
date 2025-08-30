@@ -1,14 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "tailwindcss";
 
 @font-face {
     font-family: spotify;
     src: url('./assets/fonts/GothamBold.ttf');
 }
-
-@tailwind utilities;
 
 @font-face {
     font-family: spotifyMed;
